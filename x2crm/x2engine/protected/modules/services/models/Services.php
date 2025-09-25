@@ -192,12 +192,13 @@ class Services extends X2Model
 	{
 		$criteria = new CDbCriteria;
 
-		if (isset($_GET['Services_pageSize'])) {
-			$pageSize = intval($_GET['Services_pageSize']);
-		} elseif (isset($_GET['pageSize'])) {
-			$pageSize = intval($_GET['pageSize']);
+		if ($pageSize === null) {
+			if (!Yii::app()->user->isGuest && isset(Yii::app()->params->profile->resultsPerPage)) {
+				$pageSize = intval(Yii::app()->params->profile->resultsPerPage);
+			} else {
+				$pageSize = 20; // défaut
+			}
 		}
-
 		// Jointure TOUJOURS présente pour permettre tri et filtre sur "account"
 		$criteria->join =
 			'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .

@@ -2251,7 +2251,7 @@ abstract class X2Model extends X2ActiveRecord {
         $filterCriteria = new CDbCriteria;
         $this->compareAttributes($filterCriteria);
         $criteria->mergeWith($filterCriteria);
-        $criteria->with = array(); // No joins necessary!
+        // $criteria->with = array(); // No joins necessary!
         $sort = new SmartSort(
                 get_class($this), isset($this->uid) ? $this->uid : get_class($this));
         $sort->multiSort = false;

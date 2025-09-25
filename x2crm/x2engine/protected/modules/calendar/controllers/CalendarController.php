@@ -527,6 +527,7 @@ class CalendarController extends x2base
             return false;
 
 
+
         $linked = !empty($action->associationType) &&
             strtolower($action->associationType) != 'none' &&
             class_exists(X2Model::getModelName($action->associationType));
@@ -655,12 +656,16 @@ class CalendarController extends x2base
                  * hard coded colors. (Colors must not be saved).
                  * Justin Toyomitsu (November 8th 2019).
                  */
-                if (Yii::app()->params->profile->appointmentCalendar == $calendarId) {
+                if (
+                    Yii::app()->params->profile->appointmentCalendar == $calendarId
+                    && empty($event['color'])
+                ) {
                     $event['color'] = '#91E1B3'; //Green
                     if ($event['scheduled'] == 1) {
                         $event['color'] = '#ff9aa2'; //Pink
                     }
                 }
+
 
                 $events[] = $event;
             }

@@ -281,11 +281,18 @@ $config = array(
         ),
         'log' => array(
             'class' => 'CLogRouter',
-            'routes' => (YII_DEBUG && YII_LOGGING ? array_merge($defaultLogRoutes, $debugLogRoutes) : (YII_LOGGING ? $defaultLogRoutes : array()))
+            'routes' => array(
+                array(
+                    'class' => 'CWebLogRoute',
+                    'levels' => 'trace, info, error, warning',
+                    'showInFireBug' => false,
+                ),
+            ),
         ),
+
         'messages' => array(
             'class' => 'application.components.X2MessageSource',
-//			 'forceTranslation'=>true,
+            //			 'forceTranslation'=>true,
 //             'logBlankMessages'=>false,
 //			 'onMissingTranslation'=>create_function('$event', 'Yii::log("[".$event->category."] ".$event->message,"missing","translations");'),
         ),
@@ -301,7 +308,7 @@ $config = array(
             'class' => 'application.components.X2AuthCache',
             'connectionID' => 'db',
             'tableName' => 'x2_auth_cache',
-        // 'autoCreateCacheTable'=>false,
+            // 'autoCreateCacheTable'=>false,
         ),
         'sass' => array(
             'class' => 'SassHandler',
@@ -357,7 +364,9 @@ $config = array(
 
 if (YII_UNIT_TESTING)
     $config['components']['urlManager']['rules'] = array_merge(
-            array('profileTest/<action:\w+>' => 'profileTest/<action>'), $config['components']['urlManager']['rules']);
+        array('profileTest/<action:\w+>' => 'profileTest/<action>'),
+        $config['components']['urlManager']['rules']
+    );
 
 if (file_exists('protected/config/proConfig.php')) {
     $proConfig = include('protected/config/proConfig.php');

@@ -188,25 +188,33 @@ class Services extends X2Model
 	 *  Like search but filters by status based on the user's profile
 	 *
 	 */
-	public function searchWithStatusFilter($pageSize = null, $uniqueId = null)
-	{
-		$criteria = new CDbCriteria;
-		foreach ($this->getFields(true) as $fieldName => $field) {
+public function searchWithStatusFilter($pageSize = null, $uniqueId = null)
+{
+    $criteria = new CDbCriteria;
+    
+    // Filtre sur le champ "account" via jointure manuelle
+    if (!empty($this->account)) {
+        $criteria->join =
+            'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
+            'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
+        $criteria->compare('a.name', $this->account, true);
+    }
 
-			if ($fieldName == 'status') { // if status exists
-				// filter statuses based on user's profile
-				$hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus); // get a list of statuses the user wants to hide
-				if (!$hideStatus) {
-					$hideStatus = array();
-				}
-				foreach ($hideStatus as $hide) {
-					$criteria->compare('t.status', '<>' . $hide);
-				}
-			}
-		}
-		$criteria->together = true;
-		return $this->searchBase($criteria, $pageSize);
-	}
+    // Filtrage des statuts masqués par profil utilisateur
+    foreach ($this->getFields(true) as $fieldName => $field) {
+        if ($fieldName == 'status') { // si le champ existe
+            $hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus); // statuts à masquer
+            if (!$hideStatus) {
+                $hideStatus = array();
+            }
+            foreach ($hideStatus as $hide) {
+                $criteria->compare('t.status', '<>' . $hide);
+            }
+        }
+    }
+    $criteria->together = true; // obligatoire pour JOIN custom
+    return $this->searchBase($criteria, $pageSize);
+}
 
 	public function getLastReply()
 	{

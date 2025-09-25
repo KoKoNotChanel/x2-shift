@@ -170,6 +170,17 @@ class Services extends X2Model
 			$criteria->compare('a.name', $this->account, true);
 		}
 
+		echo "<pre>DEBUG FILTER CRITERIA:\n";
+		print_r($criteria);
+		echo "</pre>";
+
+		if (!empty($this->account)) {
+			echo "<pre>DEBUG FILTER JOIN:\n";
+			print_r($criteria->join);
+			echo "</pre>";
+		}
+
+
 
 
 		return $this->searchBase($criteria);

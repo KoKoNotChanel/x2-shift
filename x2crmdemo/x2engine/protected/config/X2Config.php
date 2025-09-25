@@ -1,0 +1,12 @@
+<?php
+$appName='X2CRM';
+$email='edouard@istawi.com';
+$host='localhost';
+$user='x2shift';
+$pass='Pwd$2025@';
+$dbname='x2crm_demo';
+$version='8.5';
+$buildDate='1663790325';
+$updaterVersion='6.9.1';
+$language='en';
+?>

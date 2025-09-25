@@ -129,6 +129,7 @@ $this->widget('X2GridView', array(
 			'type' => 'raw',
 			'value' => 'isset ($data->contactIdModel) ? ($data->contactIdModel ? (isset($data->contactIdModel->companyModel) ? $data->contactIdModel->companyModel->getLink() : "") : "") : ""',
 			'filter' => CHtml::activeTextField($model, 'account'),
+			'sortable'=>true,
 		),
 		'status' => array(
 			'name' => 'status',

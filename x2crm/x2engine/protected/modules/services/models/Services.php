@@ -192,29 +192,72 @@ class Services extends X2Model
 	{
 		$criteria = new CDbCriteria;
 
-		// Filtre sur le champ "account" via jointure manuelle
-		if (!empty($this->account)) {
+		// JOIN only if the grid filters OR sorts on "account"
+		$needAccountJoin = false;
+		if (!empty($this->account))
+			$needAccountJoin = true;
+		if (
+			isset($_GET['Services_sort']) &&
+				// Gère asc et desc
+			(
+				$_GET['Services_sort'] === 'account'
+				|| $_GET['Services_sort'] === 'account.desc'
+			)
+		)
+			$needAccountJoin = true;
+
+		if ($needAccountJoin) {
 			$criteria->join =
 				'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
 				'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
-			$criteria->compare('a.name', $this->account, true);
+			if (!empty($this->account)) {
+				$criteria->compare('a.name', $this->account, true);
+			}
 		}
 
-		// Filtrage des statuts masqués par profil utilisateur
+		// Exclude status values as per user profile
 		foreach ($this->getFields(true) as $fieldName => $field) {
-			if ($fieldName == 'status') { // si le champ existe
-				$hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus); // statuts à masquer
-				if (!$hideStatus) {
+			if ($fieldName == 'status') {
+				$hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus);
+				if (!$hideStatus)
 					$hideStatus = array();
-				}
 				foreach ($hideStatus as $hide) {
 					$criteria->compare('t.status', '<>' . $hide);
 				}
 			}
 		}
-		$criteria->together = true; // obligatoire pour JOIN custom
-		return $this->searchBase($criteria, $pageSize);
+		$criteria->together = true; // forces proper JOIN with SmartSort/ActiveDataProvider
+
+		// TRI DYNAMIQUE MAPPING pour account
+		$sort = new SmartSort(
+			get_class($this),
+			isset($this->uid) ? $this->uid : get_class($this)
+		);
+		$sort->attributes = array_merge(
+			array(
+				'account' => array(
+					'asc' => 'a.name ASC',
+					'desc' => 'a.name DESC',
+				),
+			),
+			$this->getSort()
+		);
+
+		// Ordre par défaut : aucun tri sur "account" au chargement
+		$sort->defaultOrder = 't.lastUpdated DESC, t.id DESC';
+
+		$dataProvider = new SmartActiveDataProvider(get_class($this), array(
+			'sort' => $sort,
+			'pagination' => array('pageSize' => $pageSize),
+			'criteria' => $criteria,
+			'uid' => $this->uid,
+			'dbPersistentGridSettings' => $this->dbPersistentGridSettings,
+			'disablePersistentGridSettings' => $this->disablePersistentGridSettings,
+		));
+		$sort->applyOrder($criteria);
+		return $dataProvider;
 	}
+
 
 	public function getLastReply()
 	{

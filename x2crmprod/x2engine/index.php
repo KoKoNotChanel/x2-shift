@@ -67,21 +67,21 @@ if (!empty($_SERVER['REMOTE_ADDR'])) {
     }
     $config = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'protected', 'config', 'web.php'));
 
-    // Ajoutez le debug ici :
-    $configArray = require($config);
-    echo "<hr><b>Config path:</b> $config<hr>";
+    // // Ajoutez le debug ici :
+    // $configArray = require($config);
+    // echo "<hr><b>Config path:</b> $config<hr>";
 
-    echo "<hr><b>Modules déclarés:</b>";
-    printR($configArray['modules']);
-    echo "<hr><b>Imports config:</b>";
-    printR($configArray['import']);
-    echo "<hr><b>ROOT:</b> " . __DIR__ . "<hr>";
-    foreach ($configArray['modules'] as $module) {
-        $path = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'protected', 'modules', $module, 'controllers'));
-        echo "<b>Module $module :</b> $path => ";
-        echo is_dir($path) ? "OK" : "<span style='color:red'>KO</span>";
-        echo "<br>";
-    }
+    // echo "<hr><b>Modules déclarés:</b>";
+    // printR($configArray['modules']);
+    // echo "<hr><b>Imports config:</b>";
+    // printR($configArray['import']);
+    // echo "<hr><b>ROOT:</b> " . __DIR__ . "<hr>";
+    // foreach ($configArray['modules'] as $module) {
+    //     $path = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'protected', 'modules', $module, 'controllers'));
+    //     echo "<b>Module $module :</b> $path => ";
+    //     echo is_dir($path) ? "OK" : "<span style='color:red'>KO</span>";
+    //     echo "<br>";
+    // }
 
     // Ensuite seulement :
     Yii::createWebApplication($config)->run();

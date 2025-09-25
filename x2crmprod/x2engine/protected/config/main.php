@@ -129,7 +129,7 @@ $config = array(
         'application.modules.*',
         'application.modules.*.models.*',
         'application.modules.*.components.*',
-        'application.modules.*.controllers.*', // <-- AJOUT TRÈS IMPORTANT
+        'application.modules.*.controllers.*', 
         'application.components.X2UrlRule',
         'application.components.ThemeGenerator.ThemeGenerator',
         'application.components.formatters.*'

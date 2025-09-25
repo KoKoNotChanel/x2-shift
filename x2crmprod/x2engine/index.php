@@ -83,3 +83,6 @@ function filePutContents($file = '', $data = null, $mode = null, $context = null
         die();
     }
 }
+
+
+Yii::createWebApplication($config)->run();

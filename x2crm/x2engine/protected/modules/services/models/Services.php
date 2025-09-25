@@ -188,62 +188,69 @@ class Services extends X2Model
 	 *  Like search but filters by status based on the user's profile
 	 *
 	 */
-public function searchWithStatusFilter($pageSize = null, $uniqueId = null)
-{
-    $criteria = new CDbCriteria;
+	public function searchWithStatusFilter($pageSize = null, $uniqueId = null)
+	{
+		$criteria = new CDbCriteria;
 
-    // Jointure TOUJOURS présente pour permettre tri et filtre sur "account"
-    $criteria->join =
-        'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
-        'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
+		if (isset($_GET['Services_pageSize'])) {
+			$pageSize = intval($_GET['Services_pageSize']);
+		} elseif (isset($_GET['pageSize'])) {
+			$pageSize = intval($_GET['pageSize']);
+		}
 
-    // Filtre "account" (optionnel)
-    if (!empty($this->account)) {
-        $criteria->compare('a.name', $this->account, true);
-    }
+		// Jointure TOUJOURS présente pour permettre tri et filtre sur "account"
+		$criteria->join =
+			'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
+			'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
 
-    // Filtrage statut utilisateur (inchangé)
-    foreach ($this->getFields(true) as $fieldName => $field) {
-        if ($fieldName == 'status') {
-            $hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus);
-            if (!$hideStatus) $hideStatus = array();
-            foreach ($hideStatus as $hide) {
-                $criteria->compare('t.status', '<>' . $hide);
-            }
-        }
-    }
+		// Filtre "account" (optionnel)
+		if (!empty($this->account)) {
+			$criteria->compare('a.name', $this->account, true);
+		}
 
-    // Obligatoire pour gérer correctement la pagination avec JOIN
-    $criteria->together = true;
-    $criteria->distinct = true;
+		// Filtrage statut utilisateur (inchangé)
+		foreach ($this->getFields(true) as $fieldName => $field) {
+			if ($fieldName == 'status') {
+				$hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus);
+				if (!$hideStatus)
+					$hideStatus = array();
+				foreach ($hideStatus as $hide) {
+					$criteria->compare('t.status', '<>' . $hide);
+				}
+			}
+		}
 
-    // Mapping dynamique du tri colonne "account"
-    $sort = new SmartSort(
-        get_class($this),
-        isset($this->uid) ? $this->uid : get_class($this)
-    );
-    $sort->attributes = array_merge(
-        array(
-            'account' => array(
-                'asc'  => 'a.name ASC',
-                'desc' => 'a.name DESC',
-            ),
-        ),
-        $this->getSort()
-    );
-    $sort->defaultOrder = 't.lastUpdated DESC, t.id DESC';
+		// Obligatoire pour gérer correctement la pagination avec JOIN
+		$criteria->together = true;
+		$criteria->distinct = true;
 
-    $dataProvider = new SmartActiveDataProvider(get_class($this), array(
-        'sort' => $sort,
-        'pagination' => array('pageSize' => $pageSize),
-        'criteria' => $criteria,
-        'uid' => $this->uid,
-        'dbPersistentGridSettings' => $this->dbPersistentGridSettings,
-        'disablePersistentGridSettings' => $this->disablePersistentGridSettings,
-    ));
-    $sort->applyOrder($criteria);
-    return $dataProvider;
-}
+		// Mapping dynamique du tri colonne "account"
+		$sort = new SmartSort(
+			get_class($this),
+			isset($this->uid) ? $this->uid : get_class($this)
+		);
+		$sort->attributes = array_merge(
+			array(
+				'account' => array(
+					'asc' => 'a.name ASC',
+					'desc' => 'a.name DESC',
+				),
+			),
+			$this->getSort()
+		);
+		$sort->defaultOrder = 't.lastUpdated DESC, t.id DESC';
+
+		$dataProvider = new SmartActiveDataProvider(get_class($this), array(
+			'sort' => $sort,
+			'pagination' => array('pageSize' => $pageSize),
+			'criteria' => $criteria,
+			'uid' => $this->uid,
+			'dbPersistentGridSettings' => $this->dbPersistentGridSettings,
+			'disablePersistentGridSettings' => $this->disablePersistentGridSettings,
+		));
+		$sort->applyOrder($criteria);
+		return $dataProvider;
+	}
 
 
 	public function getLastReply()

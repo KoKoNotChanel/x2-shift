@@ -188,61 +188,63 @@ class Services extends X2Model
 	 *  Like search but filters by status based on the user's profile
 	 *
 	 */
-	public function searchWithStatusFilter($pageSize = null, $uniqueId = null)
-	{
-		$criteria = new CDbCriteria;
+public function searchWithStatusFilter($pageSize = null, $uniqueId = null)
+{
+    $criteria = new CDbCriteria;
 
-		// Jointure TOUJOURS présente pour permettre tri et filtre par "account"
-		$criteria->join =
-			'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
-			'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
+    // Jointure TOUJOURS présente pour permettre tri et filtre sur "account"
+    $criteria->join =
+        'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
+        'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
 
-		// Filtre sur "account" si actif
-		if (!empty($this->account)) {
-			$criteria->compare('a.name', $this->account, true);
-		}
+    // Filtre "account" (optionnel)
+    if (!empty($this->account)) {
+        $criteria->compare('a.name', $this->account, true);
+    }
 
-		// Filtrage des statuts comme avant
-		foreach ($this->getFields(true) as $fieldName => $field) {
-			if ($fieldName == 'status') {
-				$hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus);
-				if (!$hideStatus)
-					$hideStatus = array();
-				foreach ($hideStatus as $hide) {
-					$criteria->compare('t.status', '<>' . $hide);
-				}
-			}
-		}
+    // Filtrage statut utilisateur (inchangé)
+    foreach ($this->getFields(true) as $fieldName => $field) {
+        if ($fieldName == 'status') {
+            $hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus);
+            if (!$hideStatus) $hideStatus = array();
+            foreach ($hideStatus as $hide) {
+                $criteria->compare('t.status', '<>' . $hide);
+            }
+        }
+    }
 
-		$criteria->together = true;
+    // Obligatoire pour gérer correctement la pagination avec JOIN
+    $criteria->together = true;
+    $criteria->distinct = true;
 
-		// Mapping du tri pour "account"
-		$sort = new SmartSort(
-			get_class($this),
-			isset($this->uid) ? $this->uid : get_class($this)
-		);
-		$sort->attributes = array_merge(
-			array(
-				'account' => array(
-					'asc' => 'a.name ASC',
-					'desc' => 'a.name DESC',
-				),
-			),
-			$this->getSort()
-		);
-		$sort->defaultOrder = 't.lastUpdated DESC, t.id DESC';
+    // Mapping dynamique du tri colonne "account"
+    $sort = new SmartSort(
+        get_class($this),
+        isset($this->uid) ? $this->uid : get_class($this)
+    );
+    $sort->attributes = array_merge(
+        array(
+            'account' => array(
+                'asc'  => 'a.name ASC',
+                'desc' => 'a.name DESC',
+            ),
+        ),
+        $this->getSort()
+    );
+    $sort->defaultOrder = 't.lastUpdated DESC, t.id DESC';
 
-		$dataProvider = new SmartActiveDataProvider(get_class($this), array(
-			'sort' => $sort,
-			'pagination' => array('pageSize' => $pageSize),
-			'criteria' => $criteria,
-			'uid' => $this->uid,
-			'dbPersistentGridSettings' => $this->dbPersistentGridSettings,
-			'disablePersistentGridSettings' => $this->disablePersistentGridSettings,
-		));
-		$sort->applyOrder($criteria);
-		return $dataProvider;
-	}
+    $dataProvider = new SmartActiveDataProvider(get_class($this), array(
+        'sort' => $sort,
+        'pagination' => array('pageSize' => $pageSize),
+        'criteria' => $criteria,
+        'uid' => $this->uid,
+        'dbPersistentGridSettings' => $this->dbPersistentGridSettings,
+        'disablePersistentGridSettings' => $this->disablePersistentGridSettings,
+    ));
+    $sort->applyOrder($criteria);
+    return $dataProvider;
+}
+
 
 	public function getLastReply()
 	{

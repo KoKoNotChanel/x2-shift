@@ -40,7 +40,14 @@
 
 
 $menuOptions = array(
-    'index', 'create', 'createWebForm', 'import', 'export', 'lists', 'publicKB', 'portal',
+	'index',
+	'create',
+	'createWebForm',
+	'import',
+	'export',
+	'lists',
+	'publicKB',
+	'portal',
 );
 $this->insertMenu($menuOptions);
 
@@ -66,80 +73,81 @@ $('.search-form form').submit(function(){
 <?php
 */
 
-$field = Fields::model()->findByAttributes(array('modelName'=>'Services', 'fieldName'=>'status', 'type'=>'dropdown'));
-if($field) {
+$field = Fields::model()->findByAttributes(array('modelName' => 'Services', 'fieldName' => 'status', 'type' => 'dropdown'));
+if ($field) {
 	$statuses = Dropdowns::getItems($field->linkType);
-	if($statuses) {
-//		var_dump(json_decode($dropdown->options));
+	if ($statuses) {
+		//		var_dump(json_decode($dropdown->options));
 		$this->serviceCaseStatuses = $statuses;
 	}
 }
 
 $this->widget('X2GridView', array(
-	'id'=>'services-grid',
-	'title'=>Yii::t('services','Service Cases'),
-	'buttons'=>array('advancedSearch','clearFilters','columnSelector','autoResize','showHidden'),
-	'template'=> 
-        '<div id="x2-gridview-top-bar-outer" class="x2-gridview-fixed-top-bar-outer">'.
-        '<div id="x2-gridview-top-bar-inner" class="x2-gridview-fixed-top-bar-inner">'.
-        '<div id="x2-gridview-page-title" '.
-         'class="page-title icon services x2-gridview-fixed-title">'.
-        '{title}{buttons}{filterHint}'.
-        '{massActionButtons}'.
-        '{summary}{topPager}{items}{pager}',
-    'fixedHeader'=>true,
-	'dataProvider'=>$model->searchWithStatusFilter(),
+	'id' => 'services-grid',
+	'title' => Yii::t('services', 'Service Cases'),
+	'buttons' => array('advancedSearch', 'clearFilters', 'columnSelector', 'autoResize', 'showHidden'),
+	'template' =>
+		'<div id="x2-gridview-top-bar-outer" class="x2-gridview-fixed-top-bar-outer">' .
+		'<div id="x2-gridview-top-bar-inner" class="x2-gridview-fixed-top-bar-inner">' .
+		'<div id="x2-gridview-page-title" ' .
+		'class="page-title icon services x2-gridview-fixed-title">' .
+		'{title}{buttons}{filterHint}' .
+		'{massActionButtons}' .
+		'{summary}{topPager}{items}{pager}',
+	'fixedHeader' => true,
+	'dataProvider' => $model->searchWithStatusFilter(),
 	// 'enableSorting'=>false,
 	// 'model'=>$model,
-	'filter'=>$model,
-	'pager'=>array('class'=>'CLinkPager','maxButtonCount'=>10),
+	'filter' => $model,
+	'pager' => array('class' => 'CLinkPager', 'maxButtonCount' => 10),
 	// 'columns'=>$columns,
-	'modelName'=>'Services',
-	'viewName'=>'services',
+	'modelName' => 'Services',
+	'viewName' => 'services',
 	// 'columnSelectorId'=>'contacts-column-selector',
-	'defaultGvSettings'=>array(
-        'gvCheckbox' => 30,
+	'defaultGvSettings' => array(
+		'gvCheckbox' => 30,
 		'id' => 43,
 		'impact' => 80,
 		'status' => 233,
 		'assignedTo' => 112,
 		'lastUpdated' => 79,
 		'updatedBy' => 111,
-//		'name'=>234,
+		//		'name'=>234,
 //		'type'=>108,
 //		'annualRevenue'=>128,
 //		'phone'=>115,
 	),
-	'specialColumns'=>array(
-		'id'=>array(
-			'name'=>'id',
-			'type'=>'raw',
-			'value'=>'CHtml::link($data->id, array("view","id"=>$data->id))',
+	'specialColumns' => array(
+		'id' => array(
+			'name' => 'id',
+			'type' => 'raw',
+			'value' => 'CHtml::link($data->id, array("view","id"=>$data->id))',
 		),
-		'account'=>array(
-			'name'=>'account',
-			'header'=>Yii::t('contacts', 'Account'),
-			'type'=>'raw',
-			'value'=>'isset ($data->contactIdModel) ? ($data->contactIdModel ? (isset($data->contactIdModel->companyModel) ? $data->contactIdModel->companyModel->getLink() : "") : "") : ""',
+		'account' => array(
+			'name' => 'account',
+			'header' => 'Account',
+			'type' => 'raw',
+			'value' => 'isset ($data->contactIdModel) ? ($data->contactIdModel ? (isset($data->contactIdModel->companyModel) ? $data->contactIdModel->companyModel->getLink() : "") : "") : ""',
+			'filter' => CHtml::activeTextField($model, 'account'),
 		),
-        'status'=>array(
-			'name'=>'status',
-			'type'=>'raw',
-			'value'=>'Yii::t("services",$data->renderAttribute("status"))',
+		'status' => array(
+			'name' => 'status',
+			'type' => 'raw',
+			'value' => 'Yii::t("services",$data->renderAttribute("status"))',
 		),
-        'impact'=>array(
-			'name'=>'impact',
-			'type'=>'raw',
-			'value'=>'Yii::t("services",$data->renderAttribute("impact"))',
+		'impact' => array(
+			'name' => 'impact',
+			'type' => 'raw',
+			'value' => 'Yii::t("services",$data->renderAttribute("impact"))',
 		),
-/*		'name'=>array(
-			'name'=>'name',
-			'header'=>Yii::t('services','Name'),
-			'value'=>'CHtml::link($data->name,array("view","id"=>$data->id))',
-			'type'=>'raw',
-		), */
+		/*		'name'=>array(
+					'name'=>'name',
+					'header'=>Yii::t('services','Name'),
+					'value'=>'CHtml::link($data->name,array("view","id"=>$data->id))',
+					'type'=>'raw',
+				), */
 	),
-	'enableControls'=>true,
-	'fullscreen'=>true,
+	'enableControls' => true,
+	'fullscreen' => true,
 ));
 ?>

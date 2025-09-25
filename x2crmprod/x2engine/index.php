@@ -40,7 +40,7 @@
 
 
 // change the following paths if necessary
-$constants = __DIR__.DIRECTORY_SEPARATOR.'constants.php';
+$constants = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';
 $yii = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'framework', 'yii.php'));
 require_once($constants);
 require_once($yii);
@@ -55,34 +55,51 @@ if (X2_TRANSLATION_LOGGING) {
     Yii::$systemuser = $username;
 }
 Yii::registerAutoloader(array('Yii', 'x2_autoload'));
-if(!empty($_SERVER['REMOTE_ADDR'])){
+if (!empty($_SERVER['REMOTE_ADDR'])) {
     $matches = array();
     $indexReq = preg_match('/(.+)index.php/', $_SERVER["REQUEST_URI"], $matches);
 
     $filename = 'install.php';
 
-    if(file_exists($filename)){
-        header('Location: '.(!$indexReq ? $_SERVER['REQUEST_URI'] : $matches[1]).$filename);
+    if (file_exists($filename)) {
+        header('Location: ' . (!$indexReq ? $_SERVER['REQUEST_URI'] : $matches[1]) . $filename);
         exit();
     }
     $config = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'protected', 'config', 'web.php'));
+
+    // Ajoutez le debug ici :
+    $configArray = require($config);
+    echo "<hr><b>Config path:</b> $config<hr>";
+
+    echo "<hr><b>Modules déclarés:</b>";
+    printR($configArray['modules']);
+    echo "<hr><b>Imports config:</b>";
+    printR($configArray['import']);
+    echo "<hr><b>ROOT:</b> " . __DIR__ . "<hr>";
+    foreach ($configArray['modules'] as $module) {
+        $path = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'protected', 'modules', $module, 'controllers'));
+        echo "<b>Module $module :</b> $path => ";
+        echo is_dir($path) ? "OK" : "<span style='color:red'>KO</span>";
+        echo "<br>";
+    }
+
+    // Ensuite seulement :
     Yii::createWebApplication($config)->run();
 }
 
-function printR($obj, $die = false){
-    echo "<pre>".print_r($obj, true)."</pre>";
-    if($die){
+function printR($obj, $die = false)
+{
+    echo "<pre>" . print_r($obj, true) . "</pre>";
+    if ($die) {
         die();
     }
 }
 
-function filePutContents($file = '', $data = null, $mode = null, $context = null, $die = false){
-    $message=PHP_EOL.print_r($data, true).PHP_EOL;
-    file_put_contents($file,$message,$mode,$context);
-    if($die){
+function filePutContents($file = '', $data = null, $mode = null, $context = null, $die = false)
+{
+    $message = PHP_EOL . print_r($data, true) . PHP_EOL;
+    file_put_contents($file, $message, $mode, $context);
+    if ($die) {
         die();
     }
 }
-
-
-Yii::createWebApplication($config)->run();

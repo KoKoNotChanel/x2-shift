@@ -192,43 +192,32 @@ class Services extends X2Model
 	{
 		$criteria = new CDbCriteria;
 
-		// JOIN only if the grid filters OR sorts on "account"
-		$needAccountJoin = false;
-		if (!empty($this->account))
-			$needAccountJoin = true;
-		if (
-			isset($_GET['Services_sort']) &&
-				// Gère asc et desc
-			(
-				$_GET['Services_sort'] === 'account'
-				|| $_GET['Services_sort'] === 'account.desc'
-			)
-		)
-			$needAccountJoin = true;
+		// Toujours inclure les JOINS pour permettre le tri et filtre sur "account"
+		$criteria->join =
+			'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
+			'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
 
-		if ($needAccountJoin) {
-			$criteria->join =
-				'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
-				'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
-			if (!empty($this->account)) {
-				$criteria->compare('a.name', $this->account, true);
-			}
+		// Filtre par "account" si l’utilisateur saisit quelque chose
+		if (!empty($this->account)) {
+			$criteria->compare('a.name', $this->account, true);
 		}
 
-		// Exclude status values as per user profile
+		// Exclure certains status selon le profil utilisateur
 		foreach ($this->getFields(true) as $fieldName => $field) {
 			if ($fieldName == 'status') {
 				$hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus);
-				if (!$hideStatus)
+				if (!$hideStatus) {
 					$hideStatus = array();
+				}
 				foreach ($hideStatus as $hide) {
 					$criteria->compare('t.status', '<>' . $hide);
 				}
 			}
 		}
-		$criteria->together = true; // forces proper JOIN with SmartSort/ActiveDataProvider
 
-		// TRI DYNAMIQUE MAPPING pour account
+		$criteria->together = true; // force le JOIN correct avec SmartSort
+
+		// Configuration du tri
 		$sort = new SmartSort(
 			get_class($this),
 			isset($this->uid) ? $this->uid : get_class($this)
@@ -242,10 +231,9 @@ class Services extends X2Model
 			),
 			$this->getSort()
 		);
-
-		// Ordre par défaut : aucun tri sur "account" au chargement
 		$sort->defaultOrder = 't.lastUpdated DESC, t.id DESC';
 
+		// Data provider
 		$dataProvider = new SmartActiveDataProvider(get_class($this), array(
 			'sort' => $sort,
 			'pagination' => array('pageSize' => $pageSize),
@@ -254,9 +242,11 @@ class Services extends X2Model
 			'dbPersistentGridSettings' => $this->dbPersistentGridSettings,
 			'disablePersistentGridSettings' => $this->disablePersistentGridSettings,
 		));
+
 		$sort->applyOrder($criteria);
 		return $dataProvider;
 	}
+
 
 
 	public function getLastReply()

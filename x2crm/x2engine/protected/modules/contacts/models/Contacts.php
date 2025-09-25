@@ -47,7 +47,8 @@ Yii::import('application.models.X2Model');
  *
  * @package application.modules.contacts.models
  */
-class Contacts extends X2Model {
+class Contacts extends X2Model
+{
 
     public $name;
     public $verifyCode; // CAPTCHA for weblead form
@@ -57,14 +58,16 @@ class Contacts extends X2Model {
      * @return Contacts the static model class
      */
 
-    public static function model($className = __CLASS__) {
+    public static function model($className = __CLASS__)
+    {
         return parent::model($className);
     }
 
     /**
      * @return array relational rules.
      */
-    public function relations() {
+    public function relations()
+    {
         // NOTE: you may need to adjust the relation name and the related
         // class name for the relations automatically generated below.
         return array_merge(parent::relations(), array(
@@ -75,7 +78,8 @@ class Contacts extends X2Model {
     /**
      * @return string the associated database table name
      */
-    public function tableName() {
+    public function tableName()
+    {
         return 'x2_contacts';
     }
 
@@ -84,7 +88,8 @@ class Contacts extends X2Model {
      * 
      * @return type
      */
-    public function behaviors() {
+    public function behaviors()
+    {
         return array_merge(parent::behaviors(), array(
             'LinkableBehavior' => array(
                 'class' => 'LinkableBehavior',
@@ -111,8 +116,9 @@ class Contacts extends X2Model {
                 'class' => 'application.components.behaviors.MappableBehavior',
             ),
             'ModelConversionBehavior' => array(
-                    'class' => 'application.components.behaviors.ModelConversionBehavior',
-                    'deleteConvertedRecord' => false,)
+                'class' => 'application.components.behaviors.ModelConversionBehavior',
+                'deleteConvertedRecord' => false,
+            )
         ));
     }
 
@@ -121,22 +127,35 @@ class Contacts extends X2Model {
      * 
      * @return array validation rules for model attributes.
      */
-    public function rules() {
+    public function rules()
+    {
         $rules = array_merge(parent::rules(), array(
             array(
-                'verifyCode', 'captcha', 'allowEmpty' => !CCaptcha::checkRequirements(),
-                'on' => 'webFormWithCaptcha', 'captchaAction' => 'site/webleadCaptcha')
+                'verifyCode',
+                'captcha',
+                'allowEmpty' => !CCaptcha::checkRequirements(),
+                'on' => 'webFormWithCaptcha',
+                'captchaAction' => 'site/webleadCaptcha'
+            )
         ));
         return $rules;
     }
 
-    public function duplicateFields() {
+    public function getCompanyModel()
+    {
+        return Accounts::model()->findByAttributes(['nameId' => $this->company]);
+    }
+
+
+    public function duplicateFields()
+    {
         return array_merge(parent::duplicateFields(), array(
             'email',
         ));
     }
 
-    public function afterDelete() {
+    public function afterDelete()
+    {
         parent::afterDelete();
         // Remove associated X2ListItems
         Yii::app()->db->createCommand()
@@ -146,7 +165,8 @@ class Contacts extends X2Model {
     /**
      * Updates tracking key after find
      */
-    public function afterFind() {
+    public function afterFind()
+    {
         parent::afterFind();
         if ($this->trackingKey === null && self::$autoPopulateFields) {
             $this->trackingKey = self::getNewTrackingKey();
@@ -159,7 +179,8 @@ class Contacts extends X2Model {
      * 
      * @return boolean whether or not to save
      */
-    public function beforeSave() {
+    public function beforeSave()
+    {
         if ($this->trackingKey === null) {
             $this->trackingKey = self::getNewTrackingKey();
         }
@@ -175,15 +196,18 @@ class Contacts extends X2Model {
      * "changelog" behavior. That is because the behavior is disabled
      * when checking for duplicates in {@link ContactsController}
      */
-    public function afterUpdate() {
-        if (!Yii::app()->params->noSession && $this->asa('changelog') &&
-                $this->asa('changelog')->enabled) {//$this->scenario != 'noChangelog') {
+    public function afterUpdate()
+    {
+        if (
+            !Yii::app()->params->noSession && $this->asa('changelog') &&
+            $this->asa('changelog')->enabled
+        ) {//$this->scenario != 'noChangelog') {
             // send subscribe emails if anyone has subscribed to this contact
             $result = Yii::app()->db->createCommand()
-                    ->select('user_id')
-                    ->from('x2_subscribe_contacts')
-                    ->where('contact_id=:id', array(':id' => $this->id))
-                    ->queryColumn();
+                ->select('user_id')
+                ->from('x2_subscribe_contacts')
+                ->where('contact_id=:id', array(':id' => $this->id))
+                ->queryColumn();
 
             $datetime = Formatter::formatLongDateTime(time());
             $modelLink = CHtml::link($this->name, Yii::app()->controller->createAbsoluteUrl('/contacts/' . $this->id));
@@ -218,8 +242,9 @@ class Contacts extends X2Model {
 
         parent::afterUpdate();
     }
-    
-    public function findById($id) {
+
+    public function findById($id)
+    {
         return X2Model::model('Contacts')->findByPk($id);
     }
 
@@ -228,7 +253,8 @@ class Contacts extends X2Model {
      * 
      * @return type
      */
-    public static function getNames() {
+    public static function getNames()
+    {
         $contactArray = X2Model::model('Contacts')->findAll();
         $names = array(0 => 'None');
         foreach ($contactArray as $user) {
@@ -244,7 +270,8 @@ class Contacts extends X2Model {
      * Gets all public contacts.
      * @return $names An array of strings containing the names of contacts.
      */
-    public static function getAllNames() {
+    public static function getAllNames()
+    {
         $contactArray = X2Model::model('Contacts')->findAll($condition = 'visibility=1');
         $names = array(0 => 'None');
         foreach ($contactArray as $user) {
@@ -262,7 +289,8 @@ class Contacts extends X2Model {
      * @param type $contacts
      * @return type
      */
-    public static function getContactLinks($contacts) {
+    public static function getContactLinks($contacts)
+    {
         if (!is_array($contacts)) {
             $contacts = explode(' ', $contacts);
         }
@@ -286,7 +314,8 @@ class Contacts extends X2Model {
      * @param type $criteria
      * @return type
      */
-    public static function getMailingList($criteria) {
+    public static function getMailingList($criteria)
+    {
         $mailingList = array();
 
         $arr = X2Model::model('Contacts')->findAll();
@@ -302,7 +331,8 @@ class Contacts extends X2Model {
     /**
      * An alias for search ()
      */
-    public function searchAll($pageSize = null, CDbCriteria $criteria = null) {
+    public function searchAll($pageSize = null, CDbCriteria $criteria = null)
+    {
         return $this->search($pageSize, $criteria);
     }
 
@@ -311,7 +341,8 @@ class Contacts extends X2Model {
      * 
      * @return type
      */
-    public function searchMyContacts() {
+    public function searchMyContacts()
+    {
         $criteria = new CDbCriteria;
 
         $accessLevel = Yii::app()->user->checkAccess('ContactsView') ? 1 : 0;
@@ -334,7 +365,8 @@ class Contacts extends X2Model {
      * 
      * @return type
      */
-    public function searchNewContacts() {
+    public function searchNewContacts()
+    {
         $criteria = new CDbCriteria;
         $condition = 't.createDate > ' . mktime(0, 0, 0);
         $accessLevel = Yii::app()->user->checkAccess('ContactsView') ? 1 : 0;
@@ -355,7 +387,8 @@ class Contacts extends X2Model {
     /**
      * Adds tag filtering to search base 
      */
-    public function search($pageSize = null, CDbCriteria $criteria = null) {
+    public function search($pageSize = null, CDbCriteria $criteria = null)
+    {
         if ($criteria === null) {
             $criteria = new CDbCriteria;
         }
@@ -363,7 +396,8 @@ class Contacts extends X2Model {
         return $this->searchBase($criteria, $pageSize);
     }
 
-    public function searchAdmin() {
+    public function searchAdmin()
+    {
         $criteria = new CDbCriteria;
         return $this->searchBase($criteria);
     }
@@ -374,7 +408,8 @@ class Contacts extends X2Model {
      * @param type $id
      * @return type
      */
-    public function searchAccount($id) {
+    public function searchAccount($id)
+    {
         $criteria = new CDbCriteria;
         $criteria->compare('company', $id);
 
@@ -385,7 +420,8 @@ class Contacts extends X2Model {
      * Gets a DataProvider for all the contacts in the specified list,
      * using this Contact model's attributes as a search filter
      */
-    public function searchList($id, $pageSize = null) {
+    public function searchList($id, $pageSize = null)
+    {
         $list = X2List::model()->findByPk($id);
 
         if (isset($list)) {
@@ -411,7 +447,8 @@ class Contacts extends X2Model {
      * Generates a random tracking key and guarantees uniqueness
      * @return String $key a unique random tracking key
      */
-    public static function getNewTrackingKey() {
+    public static function getNewTrackingKey()
+    {
 
         $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -440,7 +477,8 @@ class Contacts extends X2Model {
      * @param AnonContact $anonContact The anonymous contact record whose attributes will be
      *  merged in with this contact
      */
-    public function mergeWithAnonContact(AnonContact $anonContact) {
+    public function mergeWithAnonContact(AnonContact $anonContact)
+    {
         $fingerprintRecord = $anonContact->fingerprint;
 
         // Migrate over existing AnonContact data

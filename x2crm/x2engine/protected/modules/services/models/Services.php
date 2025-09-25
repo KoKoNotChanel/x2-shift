@@ -164,12 +164,12 @@ class Services extends X2Model
 		$criteria = new CDbCriteria;
 
 		if (!empty($this->account)) {
-			$criteria->join .= '
-        LEFT JOIN x2_contacts c ON c.nameId = t.contactId
-        LEFT JOIN x2_accounts a ON a.nameId = c.company
-    ';
+			$criteria->join =
+				'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
+				'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
 			$criteria->compare('a.name', $this->account, true);
 		}
+
 
 
 		return $this->searchBase($criteria);

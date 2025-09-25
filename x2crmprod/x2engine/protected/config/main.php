@@ -129,8 +129,30 @@ $config = array(
         'application.components.formatters.*'
     ),
     'modules' => array(
+        'accounts',
+        'actions',
+        'bugReports',
+        'calendar',
+        'contacts',
+        'docs',
+        'emailInboxes',
+        'groups',
+        'marketing',
+        'media',
         'mobile',
+        'opportunities',
+        'products',
+        'quotes',
+        'reports',
+        'services',
+        'template',
+        'topics',
+        'users',
+        'workflow',
+        'x2Leads',
+        // ajoute tous les autres modules que tu utilises...
     ),
+
     'behaviors' => array('ApplicationConfigBehavior'),
     'controllerMap' => array(
         'googlePlus' => array(

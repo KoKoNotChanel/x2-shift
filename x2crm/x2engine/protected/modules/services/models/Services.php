@@ -236,12 +236,16 @@ class Services extends X2Model
 		// Data provider
 		$dataProvider = new SmartActiveDataProvider(get_class($this), array(
 			'sort' => $sort,
-			'pagination' => array('pageSize' => $pageSize),
+			'pagination' => array(
+				// si $pageSize est null => user prefs ou défaut
+				'pageSize' => $pageSize,
+			),
 			'criteria' => $criteria,
 			'uid' => $this->uid,
 			'dbPersistentGridSettings' => $this->dbPersistentGridSettings,
 			'disablePersistentGridSettings' => $this->disablePersistentGridSettings,
 		));
+
 
 		$sort->applyOrder($criteria);
 		return $dataProvider;

@@ -163,6 +163,9 @@ class Services extends X2Model
 	{
 		$criteria = new CDbCriteria;
 
+		// Console log for debugging
+		error_log(print_r($this->getAttributes(), true));
+
 		if (!empty($this->account)) {
 			$criteria->join = 'LEFT JOIN x2_contacts c ON c.id = t.contactId LEFT JOIN x2_accounts a ON a.id = c.accountId';
 			$criteria->compare('a.name', $this->account, true);

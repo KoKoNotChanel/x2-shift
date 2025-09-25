@@ -123,7 +123,13 @@ $config = array(
     'preload' => array('log'),
     // autoloading model and component classes
     'import' => array(
-        'application.components.behaviors.ApplicationConfigBehavior',
+        'application.models.*',
+        'application.components.*',
+        'application.components.behaviors.*',
+        'application.modules.*',
+        'application.modules.*.models.*',
+        'application.modules.*.components.*',
+        'application.modules.*.controllers.*', // <-- AJOUT TRÈS IMPORTANT
         'application.components.X2UrlRule',
         'application.components.ThemeGenerator.ThemeGenerator',
         'application.components.formatters.*'
@@ -150,7 +156,6 @@ $config = array(
         'users',
         'workflow',
         'x2Leads',
-        // ajoute tous les autres modules que tu utilises...
     ),
 
     'behaviors' => array('ApplicationConfigBehavior'),

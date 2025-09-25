@@ -221,6 +221,8 @@ class Services extends X2Model
 			}
 		}
 
+		$this->compareAttributes($criteria);
+
 		// Obligatoire pour gérer correctement la pagination avec JOIN
 		$criteria->together = true;
 		$criteria->distinct = true;

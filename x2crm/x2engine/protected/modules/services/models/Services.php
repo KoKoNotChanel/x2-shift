@@ -47,89 +47,105 @@ Yii::import('application.modules.user.models.*');
  *
  * @package application.modules.services.models
  */
-class Services extends X2Model {
+class Services extends X2Model
+{
 
 	public $account;
 
-    public $verifyCode; // CAPTCHA for Service case form
+	public $verifyCode; // CAPTCHA for Service case form
 
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return Services the static model class
 	 */
-	public static function model($className=__CLASS__) {
+	public static function model($className = __CLASS__)
+	{
 		return parent::model($className);
 	}
 
 	/**
 	 * @return string the associated database table name
 	 */
-	public function tableName() {
+	public function tableName()
+	{
 		return 'x2_services';
 	}
 
-	public function behaviors() {
-		return array_merge(parent::behaviors(),array(
-			'LinkableBehavior'=>array(
-				'class'=>'LinkableBehavior',
-				'module'=>'services',
-		//		'icon'=>'accounts_icon.png',
+	public function behaviors()
+	{
+		return array_merge(parent::behaviors(), array(
+			'LinkableBehavior' => array(
+				'class' => 'LinkableBehavior',
+				'module' => 'services',
+				//		'icon'=>'accounts_icon.png',
 			),
 			'ERememberFiltersBehavior' => array(
-				'class'=>'application.components.behaviors.ERememberFiltersBehavior',
-				'defaults'=>array(),
-				'defaultStickOnClear'=>false
+				'class' => 'application.components.behaviors.ERememberFiltersBehavior',
+				'defaults' => array(),
+				'defaultStickOnClear' => false
 			)
 		));
 	}
 
-    public function rules () {
-        $rules = array_merge(parent::rules (), array(
-            array(
-                'verifyCode', 'captcha', 'allowEmpty' => !CCaptcha::checkRequirements(),
-                    'on' => 'webFormWithCaptcha', 'captchaAction' => 'site/webleadCaptcha'),
-	    array(
-		'resolution', 'validateResolution'
-	    )
-        ));
-        return $rules;
-    }
-	
-    /**
-     * resolution can not be blank when status is "closed - resolved"
-     * Returns True or False
-     */
-    public function validateResolution(){
-        if(($this->status == "Closed - Resolved") && ((is_null($this->resolution)) 
-	   || (ctype_space($this->resolution)))){
-	    $this->addError('status', Yii::t('services', 'Resolution can not be blank when status is: Closed - Resolved'));
-        }
-    }
+	public function rules()
+	{
+		$rules = array_merge(parent::rules(), array(
+			array(
+				'verifyCode',
+				'captcha',
+				'allowEmpty' => !CCaptcha::checkRequirements(),
+				'on' => 'webFormWithCaptcha',
+				'captchaAction' => 'site/webleadCaptcha'
+			),
+			array(
+				'resolution',
+				'validateResolution'
+			),
+			array('account', 'safe', 'on' => 'search'),
+		));
+		return $rules;
+	}
 
-    public function afterFind(){
-        if($this->name != $this->id) {
+	/**
+	 * resolution can not be blank when status is "closed - resolved"
+	 * Returns True or False
+	 */
+	public function validateResolution()
+	{
+		if (
+			($this->status == "Closed - Resolved") && ((is_null($this->resolution))
+				|| (ctype_space($this->resolution)))
+		) {
+			$this->addError('status', Yii::t('services', 'Resolution can not be blank when status is: Closed - Resolved'));
+		}
+	}
+
+	public function afterFind()
+	{
+		if ($this->name != $this->id) {
 			$this->name = $this->id;
 			$this->update(array('name'));
 		}
-        return parent::afterFind();
-    }
+		return parent::afterFind();
+	}
 
 	/**
 	 *
 	 * @return boolean whether or not to save
 	 */
-	public function afterSave() {
+	public function afterSave()
+	{
 		$model = $this->getOwner();
 
 		$oldAttributes = $model->getOldAttributes();
 
-		if($model->escalatedTo != '' && (!isset($oldAttributes['escalatedTo']) || $model->escalatedTo != $oldAttributes['escalatedTo'])) {
-			$event=new Events;
-			$event->type='case_escalated';
-			$event->user=$this->updatedBy;
-			$event->associationType='Services';
-			$event->associationId=$model->id;
-			if($event->save()){
+		if ($model->escalatedTo != '' && (!isset($oldAttributes['escalatedTo']) || $model->escalatedTo != $oldAttributes['escalatedTo'])) {
+			$event = new Events;
+			$event->type = 'case_escalated';
+			$event->user = $this->updatedBy;
+			$event->associationType = 'Services';
+			$event->associationId = $model->id;
+			if ($event->save()) {
 				$notif = new Notification;
 				$notif->user = $model->escalatedTo;
 				$notif->createDate = time();
@@ -143,27 +159,45 @@ class Services extends X2Model {
 		parent::afterSave();
 	}
 
-	public function search() {
-		$criteria=new CDbCriteria;
+	public function search()
+	{
+		$criteria = new CDbCriteria;
+
+		if (!empty($this->account)) {
+			$criteria->join = 'LEFT JOIN x2_contacts c ON c.id = t.contactId LEFT JOIN x2_accounts a ON a.id = c.accountId';
+			$criteria->compare('a.name', $this->account, true);
+			$criteria->with = array();
+		}
+
 		return $this->searchBase($criteria);
 	}
+
+	public function relations()
+	{
+		return array_merge(parent::relations(), array(
+			'contact' => array(self::BELONGS_TO, 'Contacts', 'contactId'),
+		));
+	}
+
+
 
 	/**
 	 *  Like search but filters by status based on the user's profile
 	 *
 	 */
-	public function searchWithStatusFilter($pageSize=null, $uniqueId=null) {
-		$criteria=new CDbCriteria;
-		foreach($this->getFields(true) as $fieldName => $field) {
+	public function searchWithStatusFilter($pageSize = null, $uniqueId = null)
+	{
+		$criteria = new CDbCriteria;
+		foreach ($this->getFields(true) as $fieldName => $field) {
 
-			if($fieldName == 'status') { // if status exists
+			if ($fieldName == 'status') { // if status exists
 				// filter statuses based on user's profile
 				$hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus); // get a list of statuses the user wants to hide
-				if(!$hideStatus) {
+				if (!$hideStatus) {
 					$hideStatus = array();
 				}
-				foreach($hideStatus as $hide) {
-					$criteria->compare('t.status', '<>'.$hide);
+				foreach ($hideStatus as $hide) {
+					$criteria->compare('t.status', '<>' . $hide);
 				}
 			}
 		}
@@ -171,23 +205,25 @@ class Services extends X2Model {
 		return $this->searchBase($criteria, $pageSize);
 	}
 
-	public function getLastReply() {
+	public function getLastReply()
+	{
 		return $lastReply = Yii::app()->db->createCommand()
-                ->select('b.*')
-                ->from('x2_services a')
-                ->join('x2_service_replies b', 'a.id = b.serviceId')
-                ->where('a.id = :id')
-                ->order('b.createDate DESC')
-				->queryRow(true,[':id'=>$this->id]);
+			->select('b.*')
+			->from('x2_services a')
+			->join('x2_service_replies b', 'a.id = b.serviceId')
+			->where('a.id = :id')
+			->order('b.createDate DESC')
+			->queryRow(true, [':id' => $this->id]);
 	}
 
-	public function getReplies() {
+	public function getReplies()
+	{
 		return $replies = Yii::app()->db->createCommand()
 			->select('*')
 			->from('x2_service_replies')
 			->where('serviceId = :id')
 			->order('createDate DESC')
-			->queryAll(true, [':id'=>$this->id]);
+			->queryAll(true, [':id' => $this->id]);
 	}
 
 }

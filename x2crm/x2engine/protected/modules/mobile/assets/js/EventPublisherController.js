@@ -76,52 +76,7 @@ EventPublisherController.prototype.setUpForm = function () {
     var locationButtonOn = false;
     //var audioButton$ = $('#footer .audio-attach-button');
     //var videoButton$ = $('#footer .video-attach-button');
-    
-    locationButton$.click (function () {
-        if (!x2.main.isPhoneGap) return;
-        if (!locationButtonOn) {
-            x2touch.API.getCurrentPosition(function(position) {
-                var pos = {
-                   lat: position.coords.latitude,
-                   lon: position.coords.longitude
-                 };
 
-                that.form$.find ('#geoCoords').val(JSON.stringify (pos));
-                that.form$.find ('#geoLocationCoords').val("set");
-                x2.mobileForm.submitWithFiles (
-                   that.form$, 
-                   function (response) {
-                       try {
-                           var data = JSON.parse(response);
-                           var theAddress = data['results'][0]['formatted_address'];
-                           $.mobile.activePage.find ('.event-text-box-location').val(that.translations['Checking in at']+' '+theAddress);	
-                           $('.location-attach-button > .fa-location-arrow').css('color', '#0084ff');
-                           locationButtonOn = true;
-                       } catch (e) {
-                           alert(e);
-                           alert(that.translations['Failed to fetch location']);
-                       }
-
-                       x2.main.refreshContent ();
-                       $.mobile.loading ('hide');
-                   }, function (jqXHR, textStatus, errorThrown) {
-                       $.mobile.loading ('hide');
-                       x2.main.alert (textStatus, that.translations['Error']);
-                   }
-               ); 
-               that.form$.find ('#geoLocationCoords').val("unset");
-            }, function (error) {
-                alert(that.translations['code']+ ': ' + error.code    + '\n' +
-                     that.translations['message']+ ': ' + error.message + '\n');
-            }, {});             
-        } else {
-            that.form$.find ('#geoCoords').val("");
-            that.form$.find ('#geoLocationCoords').val("");
-            $.mobile.activePage.find ('.event-text-box-location').val("");
-            $('.location-attach-button > .fa-location-arrow').css('color', 'grey');
-            locationButtonOn = false;
-        }
-    });
     locationButton$.click ();
     
     /*new x2.AudioButton ({

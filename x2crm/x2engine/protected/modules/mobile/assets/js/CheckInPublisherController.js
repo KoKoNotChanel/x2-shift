@@ -62,55 +62,7 @@ CheckInPublisherController.prototype.setUpForm = function () {
 
     $.mobile.activePage.find ('.event-publisher').click (function () {
         eventBox$.focus (); 
-    });
-    
-    x2touch.API.getCurrentPosition(function(position) {
-         var pos = {
-           lat: position.coords.latitude,
-           lon: position.coords.longitude
-         };
-        that.form$.find ('#geoCoords').val(JSON.stringify (pos));
-        that.form$.find ('#geoLocationCoords').val("set");
-        x2.mobileForm.submitWithFiles (
-           that.form$, 
-           function (response) {
-               try {
-                   var data = JSON.parse(response);
-                   if (!data['results']) {
-                       if (data['error']) {
-                           alert(data['error']);
-                       }
-                       if (data['redirectUrl']) {
-                           var url = data['redirectUrl'];
-                           $(':mobile-pagecontainer').pagecontainer (
-                              'change', url, { transition: 'none' });
-                       }
-                       return;
-                   }
-                   var theAddress = data['results'][0]['formatted_address'];
-                   $.mobile.activePage.find ('.event-text-box').val(that.translations['Checking in at']+' '+theAddress);
-                    alert(that.translations['Thanks for checking in!']);
-                    $.mobile.activePage.find('.post-event-button').trigger( "click" );
-               } catch (e) {
-                   /*
-                    * Possibilities: API token not set or API not turned on
-                    */
-                   alert(e);
-                   window.history.back();
-               }
-               x2.main.refreshContent ();
-               $.mobile.loading ('hide');
-           }, function (jqXHR, textStatus, errorThrown) {
-               $.mobile.loading ('hide');
-               x2.main.alert (textStatus, 'Error');
-           }
-       ); 
-        that.form$.find ('#geoLocationCoords').val("unset");
-    }, function (error) {
-        alert(that.translations['error code']+': ' + error.code    + '\n' +
-              that.translations['error message']+': ' + error.message + '\n');
-    }, {});
-        
+    });    
 };
 
 CheckInPublisherController.prototype.init = function () { 

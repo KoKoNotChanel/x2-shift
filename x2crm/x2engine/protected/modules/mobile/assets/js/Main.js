@@ -229,37 +229,6 @@ Main.prototype.setUpLocation = function () {
     if (locationTrackingSwitch === null){
         locationTrackingSwitch = 0; //every hour
     } 
-   var phpSessionId = this.getCookie("PHPSESSID");
-    
-   if(locationTrackingSwitch === 1 && phpSessionId !== null) {
-        setInterval(function() {
-            //your jQuery ajax code
-            if (x2.main.isPhoneGap) {
-              x2touch.API.getCurrentPosition(function(position) {
-                  var pos = {
-                     lat: position.coords.latitude,
-                     lon: position.coords.longitude
-                   };
-
-                   $.mobile.activePage.find ('#geoCoords').val(JSON.stringify (pos));
-              }, function (error) {
-                  alert('code: '    + error.code    + '\n' +
-                        'message: ' + error.message + '\n');
-              }, {});         
-            }
-            x2.mobileForm.submitWithFiles (
-                form$, 
-                function (data) {
-                    
-                }, function (jqXHR, textStatus, errorThrown) {
-                    $.mobile.loading ('hide');
-                    x2.main.alert (textStatus, 'Error');
-                }
-            );
-        }, 1000 * 60 * locationTrackingFrequency); 
-        // where locationTrackingFrequency is your every x minutes
-    }
-    
 };
 
 /**

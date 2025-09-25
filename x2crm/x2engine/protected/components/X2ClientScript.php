@@ -954,7 +954,6 @@ class X2ClientScript extends NLSClientScript {
      */
     public function registerGeolocationScript($onLocationButton = false, $multiple = false, $pos = CClientScript::POS_READY) {
         $selector = $multiple ? "input[name=geoCoords]" : "#geoCoords";
-        $enableGeolocation = Yii::app()->settings->enableGeolocation;
         $noDNT = (!isset ($_SERVER['HTTP_DNT']) || $_SERVER['HTTP_DNT'] != 1);
         if ($onLocationButton) {
             if (Yii::app()->settings->enableMaps) {
@@ -981,34 +980,6 @@ class X2ClientScript extends NLSClientScript {
                         $("#toggle-location-button")
                             .data("location-enabled", true)
                             .css("color", "blue");'.
-                        (($enableGeolocation && isset($_SERVER['HTTPS']) && $noDNT) ?
-                        'if ("geolocation" in navigator) {
-                            navigator.geolocation.getCurrentPosition(function(position) {
-                            var pos = {
-                              lat: position.coords.latitude,
-                              lon: position.coords.longitude,
-                              locationEnabled: true
-                            };
-                            $("'.$selector.'").val(JSON.stringify (pos));
-
-                            if (typeof google !== "undefined") {
-                                var latLng = {
-                                    lat: position.coords.latitude,
-                                    lng: position.coords.longitude
-                                }
-                                var geocoder = new google.maps.Geocoder();
-                                geocoder.geocode( {"location": latLng}, function(results, status) {
-                                    if (status == google.maps.GeocoderStatus.OK) {
-                                        var pos = JSON.parse($("'.$selector.'").val());
-                                        pos.address = results[0].formatted_address;
-                                        $("'.$selector.'").val(JSON.stringify (pos));
-                                    }
-                                });
-                            }
-                          }, function() {
-                            console.log("error fetching geolocation data");
-                          });
-                        }' : '$("'.$selector.'").val(JSON.stringify ({locationEnabled: true}));').
                     '}
                 });
                 $("#toggle-location-comment-button").click(function(evt) {
@@ -1022,22 +993,7 @@ class X2ClientScript extends NLSClientScript {
                     }
                 });
             ', $pos);
-        } else if ($enableGeolocation && isset($_SERVER['HTTPS']) && $noDNT) {
-            Yii::app()->clientScript->registerScript('geolocationJs', '
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(function(position) {
-                    var pos = {
-                      lat: position.coords.latitude,
-                      lon: position.coords.longitude
-                    };
-
-                    $("'.$selector.'").val(JSON.stringify (pos));
-                  }, function() {
-                    console.log("error fetching geolocation data");
-                  });
-                };
-            ', $pos);
-        }
+        } 
     }
 
     /**

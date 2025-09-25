@@ -228,26 +228,6 @@ x2WebTracker.setKeyCookieHiddenField = function (key) {
         require(__DIR__.'/js/fontdetect.js');
         require(__DIR__.'/js/X2Identity.js'); ?>
         fingerprint = x2Identity.fingerprint();
-
-        <?php if (!empty ($_SERVER['HTTPS']) && !file_exists(__DIR__.DIRECTORY_SEPARATOR.'.nogeoloc')) { ?>
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-            var pos = {
-              lat: position.coords.latitude,
-              lon: position.coords.longitude
-            };
-
-            // Forward coords afterwards asynchronously
-            x2WebTracker.sendKey ({
-                url: url,
-                fingerprint: fingerprint,
-                geoCoords: JSON.stringify (pos)
-            });
-          }, function() {
-            console.log("error fetching geolocation data");
-          });
-        }
-        <?php } ?>
     <?php } ?>
 
     <?php 

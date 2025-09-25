@@ -192,8 +192,14 @@ class Services extends X2Model
 	{
 		$criteria = new CDbCriteria;
 
-		// Filtre sur le champ "account" via jointure manuelle
-		if (!empty($this->account) || (isset($_GET['Services_sort']) && strpos($_GET['Services_sort'], 'account') !== false)) {
+		// Forcer le JOIN si filtre ou tri sur "account"
+		$needAccountJoin = false;
+		if (!empty($this->account))
+			$needAccountJoin = true;
+		if (isset($_GET['Services_sort']) && strpos($_GET['Services_sort'], 'account') !== false)
+			$needAccountJoin = true;
+
+		if ($needAccountJoin) {
 			$criteria->join =
 				'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
 				'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
@@ -202,7 +208,7 @@ class Services extends X2Model
 			}
 		}
 
-		// Filtrage des statuts masqués par profil utilisateur
+		// Filtrage des statuts à masquer selon le profil
 		foreach ($this->getFields(true) as $fieldName => $field) {
 			if ($fieldName == 'status') {
 				$hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus);
@@ -216,7 +222,7 @@ class Services extends X2Model
 		}
 		$criteria->together = true; // obligatoire pour JOIN custom
 
-		// Tri personnalisé sur le champ account
+		// Tri personnalisé sur account (+ autres) pour SmartSort/DataProvider
 		$sort = new SmartSort(
 			get_class($this),
 			isset($this->uid) ? $this->uid : get_class($this)
@@ -225,7 +231,7 @@ class Services extends X2Model
 			array(
 				'account' => array(
 					'asc' => 'a.name ASC',
-					'desc' => 'a.name DESC'
+					'desc' => 'a.name DESC',
 				),
 			),
 			$this->getSort()
@@ -243,6 +249,7 @@ class Services extends X2Model
 		$sort->applyOrder($criteria);
 		return $dataProvider;
 	}
+
 
 
 	public function getLastReply()

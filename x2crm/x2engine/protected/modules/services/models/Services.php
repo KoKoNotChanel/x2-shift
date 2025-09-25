@@ -192,61 +192,65 @@ class Services extends X2Model
 	{
 		$criteria = new CDbCriteria;
 
-		// Toujours inclure les JOINS pour permettre le tri et filtre sur "account"
-		$criteria->join =
-			'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
-			'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
+		// Détermine besoin du JOIN pour tri ou filtre sur "account"
+		$requestSort = isset($_GET['Services_sort']) ? $_GET['Services_sort'] : '';
+		$accountSortRequested = ($requestSort === 'account' || $requestSort === 'account.desc');
+		$needAccountJoin = !empty($this->account) || $accountSortRequested;
 
-		// Filtre par "account" si l’utilisateur saisit quelque chose
-		if (!empty($this->account)) {
-			$criteria->compare('a.name', $this->account, true);
+		// JOIN dynamique, filtrage sur "account" seulement si activé
+		if ($needAccountJoin) {
+			$criteria->join =
+				'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
+				'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
+			if (!empty($this->account)) {
+				$criteria->compare('a.name', $this->account, true);
+			}
+			$criteria->together = true;
+		} else {
+			$criteria->together = false;
 		}
 
-		// Exclure certains status selon le profil utilisateur
+		// Filtrage sur les statuts exclus
 		foreach ($this->getFields(true) as $fieldName => $field) {
 			if ($fieldName == 'status') {
 				$hideStatus = CJSON::decode(Yii::app()->params->profile->hideCasesWithStatus);
-				if (!$hideStatus) {
+				if (!$hideStatus)
 					$hideStatus = array();
-				}
 				foreach ($hideStatus as $hide) {
 					$criteria->compare('t.status', '<>' . $hide);
 				}
 			}
 		}
 
-		$criteria->together = true; // force le JOIN correct avec SmartSort
+		// Tri dynamique, ajoute le tri sur "account" UNIQUEMENT si le JOIN est activé
+		$sortAttributes = $this->getSort();
+		if ($needAccountJoin) {
+			$sortAttributes = array_merge(
+				array(
+					'account' => array(
+						'asc' => 'a.name ASC',
+						'desc' => 'a.name DESC',
+					),
+				),
+				$sortAttributes
+			);
+		}
 
-		// Configuration du tri
 		$sort = new SmartSort(
 			get_class($this),
 			isset($this->uid) ? $this->uid : get_class($this)
 		);
-		$sort->attributes = array_merge(
-			array(
-				'account' => array(
-					'asc' => 'a.name ASC',
-					'desc' => 'a.name DESC',
-				),
-			),
-			$this->getSort()
-		);
+		$sort->attributes = $sortAttributes;
 		$sort->defaultOrder = 't.lastUpdated DESC, t.id DESC';
 
-		// Data provider
 		$dataProvider = new SmartActiveDataProvider(get_class($this), array(
 			'sort' => $sort,
-			'pagination' => array(
-				// si $pageSize est null => user prefs ou défaut
-				'pageSize' => $pageSize,
-			),
+			'pagination' => array('pageSize' => $pageSize),
 			'criteria' => $criteria,
 			'uid' => $this->uid,
 			'dbPersistentGridSettings' => $this->dbPersistentGridSettings,
 			'disablePersistentGridSettings' => $this->disablePersistentGridSettings,
 		));
-
-
 		$sort->applyOrder($criteria);
 		return $dataProvider;
 	}

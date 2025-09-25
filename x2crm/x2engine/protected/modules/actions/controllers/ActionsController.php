@@ -773,10 +773,10 @@ class ActionsController extends x2base {
         $model = $this->loadModel($id);
         if(isset($_POST['Actions'])){
 
-            if($model->calendarId == Yii::app()->params->profile->appointmentCalendar){
-                //Don't save the colors if appointment
-                unset($_POST['Actions']['color']);
-            }
+            // if($model->calendarId == Yii::app()->params->profile->appointmentCalendar){
+            //     //Don't save the colors if appointment
+            //     unset($_POST['Actions']['color']);
+            // }
 
             $model->setX2Fields($_POST['Actions']);
 

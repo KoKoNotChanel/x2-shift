@@ -162,29 +162,18 @@ class Services extends X2Model
 	public function search()
 	{
 		$criteria = new CDbCriteria;
-
 		if (!empty($this->account)) {
 			$criteria->join =
 				'LEFT JOIN x2_contacts c ON c.nameId = t.contactId ' .
 				'LEFT JOIN x2_accounts a ON a.nameId = c.company ';
 			$criteria->compare('a.name', $this->account, true);
-		}
-
-		echo "<pre>DEBUG FILTER CRITERIA:\n";
-		print_r($criteria);
-		echo "</pre>";
-
-		if (!empty($this->account)) {
-			echo "<pre>DEBUG FILTER JOIN:\n";
+			echo "<pre>JOIN utilisé:\n";
 			print_r($criteria->join);
-			echo "</pre>";
+			echo "\n</pre>";
 		}
-
-
-
-
 		return $this->searchBase($criteria);
 	}
+
 
 	public function relations()
 	{

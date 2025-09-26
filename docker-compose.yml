@@ -21,7 +21,7 @@ services:
       restart: always
       environment:
         PMA_HOST: mysql
-        PMA_PORT: 3307
+        PMA_PORT: 3306
         PMA_USER: root
         PMA_PASSWORD: Shift2025#
         PMA_ABSOLUTE_URI: https://hola.istawi.com/phpmyadmin/

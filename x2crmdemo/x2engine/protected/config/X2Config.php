@@ -1,7 +1,7 @@
 <?php
 $appName='X2CRM';
 $email='edouard@istawi.com';
-$host='172.19.0.2';
+$host='127.0.0.1';
 $user='x2shift';
 $pass='Pwd$2025@';
 $dbname='x2crm_demo';

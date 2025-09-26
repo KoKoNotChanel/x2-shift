@@ -53,7 +53,8 @@ Yii::import('application.components.util.AuxLib');
  * @author Jake Houser <jake@x2engine.com>, Demitri Morgan <demitri@x2engine.com>
  * TODO: replace hard-coded references to ", " delimeter with Fields::MULTI_ASSIGNMENT_DELIM
  */
-class X2PermissionsBehavior extends ModelPermissionsBehavior {
+class X2PermissionsBehavior extends ModelPermissionsBehavior
+{
 
     /**
      * The access level for administrators.
@@ -127,8 +128,9 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      */
     private $_isVisibleTo = array();
 
-    public function clearCache () {
-        $this->_isVisibleTo = $this->_isAssignedTo = array ();
+    public function clearCache()
+    {
+        $this->_isVisibleTo = $this->_isAssignedTo = array();
     }
 
     /**
@@ -136,27 +138,35 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      * @return CDbCriteria
      */
     public function getAccessCriteria(
-        $tableAlias = 't', $paramsNamespace = 'X2PermissionsBehavior', $showHidden = false) {
+        $tableAlias = 't',
+        $paramsNamespace = 'X2PermissionsBehavior',
+        $showHidden = false
+    ) {
 
         $criteria = new CDbCriteria;
         $criteria->alias = $tableAlias;
         $accessLevel = $this->getAccessLevel();
 
         $conditions = $this->getAccessConditions(
-                $accessLevel, $tableAlias, $paramsNamespace, $showHidden);
+            $accessLevel,
+            $tableAlias,
+            $paramsNamespace,
+            $showHidden
+        );
         foreach ($conditions as $arr) {
             $criteria->addCondition($arr['condition'], $arr['operator']);
             if (!empty($arr['params']))
                 $criteria->params = array_merge($criteria->params, $arr['params']);
         }
-        
+
         return $criteria;
     }
 
     /**
      * @return array access condition and parameters 
      */
-    public function getAccessSQLCondition($tableAlias = 't') {
+    public function getAccessSQLCondition($tableAlias = 't')
+    {
         $criteria = $this->getAccessCriteria($tableAlias);
         return array('(' . $criteria->condition . ')', $criteria->params);
     }
@@ -169,7 +179,8 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      * module a model "belongs" to.
      * @return integer The access level. 0=no access, 1=own records, 2=public records, 3=full access
      */
-    public function getAccessLevel($uid=null) {
+    public function getAccessLevel($uid = null)
+    {
         $module = ucfirst($this->owner->module);
 
         if ($uid) {
@@ -180,15 +191,17 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
         }
         $accessLevel = self::QUERY_NONE;
 
-        if (Yii::app()->params->isAdmin ||
-                Yii::app()->authManager->checkAccess($module . 'Admin', $uid)) {
+        if (
+            Yii::app()->params->isAdmin ||
+            Yii::app()->authManager->checkAccess($module . 'Admin', $uid)
+        ) {
 
             if ($accessLevel < self::QUERY_ALL)
                 $accessLevel = self::QUERY_ALL;
-        }elseif (Yii::app()->authManager->checkAccess($module . 'ReadOnlyAccess', $uid)) {
+        } elseif (Yii::app()->authManager->checkAccess($module . 'ReadOnlyAccess', $uid)) {
             if ($accessLevel < self::QUERY_PUBLIC)
                 $accessLevel = self::QUERY_PUBLIC;
-        }elseif (Yii::app()->authManager->checkAccess($module . 'PrivateReadOnlyAccess', $uid)) {
+        } elseif (Yii::app()->authManager->checkAccess($module . 'PrivateReadOnlyAccess', $uid)) {
             if ($accessLevel < self::QUERY_SELF)
                 $accessLevel = self::QUERY_SELF;
         }
@@ -205,7 +218,8 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      * Resolves/returns the assignment attribute to use in permission checks
      * @return type
      */
-    public function getAssignmentAttr() {
+    public function getAssignmentAttr()
+    {
         if (!isset($this->_assignmentAttr)) {
             $this->_assignmentAttr = false;
             if ($this->owner->hasAttribute('assignedTo')) {
@@ -229,7 +243,8 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
     /**
      * Resolves/returns the visibility attribute to use in permission checks
      */
-    public function getVisibilityAttr() {
+    public function getVisibilityAttr()
+    {
         if (!isset($this->_visibilityAttr)) {
             $this->_visibilityAttr = false;
             if ($this->owner->hasAttribute('visibility')) {
@@ -252,7 +267,8 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      * Returns visibility dropdown menu options.
      * @return type
      */
-    public static function getVisibilityOptions() {
+    public static function getVisibilityOptions()
+    {
         return array(
             self::VISIBILITY_PUBLIC => Yii::t('app', 'Public'),
             self::VISIBILITY_PRIVATE => Yii::t('app', 'Private'),
@@ -271,8 +287,11 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      * @return String The SQL conditions
      */
     public function getAccessConditions(
-        $accessLevel, $tableAlias = 't', $paramsNamespace = 'X2PermissionsBehavior',
-        $showHidden = false) {
+        $accessLevel,
+        $tableAlias = 't',
+        $paramsNamespace = 'X2PermissionsBehavior',
+        $showHidden = false
+    ) {
 
         $assignmentAttr = $this->getAssignmentAttr();
         $visibilityAttr = $this->getVisibilityAttr();
@@ -288,10 +307,11 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
                 } else {
                     $ret[] = array(
                         'condition' =>
-                        "NOT (" . $prefix . "$visibilityAttr=" . self::VISIBILITY_PRIVATE . " AND "
-                        . $prefix . "$assignmentAttr='Anyone')",
+                            "NOT (" . $prefix . "$visibilityAttr=" . self::VISIBILITY_PRIVATE . " AND "
+                            . $prefix . "$assignmentAttr='Anyone')",
                         'operator' => 'OR',
-                        'params' => array());
+                        'params' => array()
+                    );
                 }
                 break;
             case self::QUERY_PUBLIC:
@@ -309,8 +329,8 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
                 if (!empty($groupmatesRegex)) {
                     $ret[] = array(
                         'condition' =>
-                        "(" . $prefix . "$visibilityAttr=" . self::VISIBILITY_GROUPS . ' ' .
-                        "AND " . $prefix . "$assignmentAttr 
+                            "(" . $prefix . "$visibilityAttr=" . self::VISIBILITY_GROUPS . ' ' .
+                            "AND " . $prefix . "$assignmentAttr 
                                 REGEXP BINARY :" . $paramsNamespace . "groupmatesRegex)",
                         'operator' => 'OR',
                         'params' => array(
@@ -345,10 +365,11 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
                 if ($assignmentAttr && $visibilityAttr) {
                     $ret[] = array(
                         'condition' =>
-                        "NOT (" . $prefix . "$visibilityAttr=" . self::VISIBILITY_PRIVATE . " AND "
-                        . $prefix . "$assignmentAttr='Anyone')",
+                            "NOT (" . $prefix . "$visibilityAttr=" . self::VISIBILITY_PRIVATE . " AND "
+                            . $prefix . "$assignmentAttr='Anyone')",
                         'operator' => 'AND',
-                        'params' => array());
+                        'params' => array()
+                    );
                 }
                 break;
             case self::QUERY_NONE:  // can't view anything
@@ -366,15 +387,16 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      *  the record is assigned to anyone or no one.
      * @return bool true of action is assigned to specified user, false otherwise
      */
-    public function isAssignedTo($username, $excludeAnyone = false) {
+    public function isAssignedTo($username, $excludeAnyone = false)
+    {
         if (isset($this->_isAssignedTo[$username][$excludeAnyone]))
             return $this->_isAssignedTo[$username][$excludeAnyone];
         if (!$this->assignmentAttr) // No way to determine assignment
             return true;
 
         // User model corresponding to the specified username
-        $user = $username === Yii::app()->getSuName() ? 
-            Yii::app()->getSuModel() : 
+        $user = $username === Yii::app()->getSuName() ?
+            Yii::app()->getSuModel() :
             User::model()->findByAttributes(array('username' => $username));
 
         $isAssignedTo = false;
@@ -408,23 +430,27 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
         return $isAssignedTo;
     }
 
-    public function getHiddenCondition ($tableAlias = 't') {
+    public function getHiddenCondition($tableAlias = 't')
+    {
         $assignmentAttr = $this->getAssignmentAttr();
         $visibilityAttr = $this->getVisibilityAttr();
         if ($assignmentAttr && $visibilityAttr) {
             return "(NOT ($tableAlias.$assignmentAttr='Anyone' AND 
-                $tableAlias.$visibilityAttr = ".self::VISIBILITY_PRIVATE."))";
+                $tableAlias.$visibilityAttr = " . self::VISIBILITY_PRIVATE . "))";
         } else {
             return 'TRUE';
         }
     }
 
-    private function isHidden () {
+    private function isHidden()
+    {
         $assignmentAttr = $this->getAssignmentAttr();
         $visibilityAttr = $this->getVisibilityAttr();
         if ($assignmentAttr && $visibilityAttr) {
-            if ($this->owner->$assignmentAttr === 'Anyone' && 
-                $this->owner->$visibilityAttr == self::VISIBILITY_PRIVATE) {
+            if (
+                $this->owner->$assignmentAttr === 'Anyone' &&
+                $this->owner->$visibilityAttr == self::VISIBILITY_PRIVATE
+            ) {
 
                 return true;
             }
@@ -439,7 +465,8 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      * @param User $user The user for which visibility is to be checked
      * @return type
      */
-    public function isVisibleTo($user) {
+    public function isVisibleTo($user)
+    {
         if ($user) {
             $username = $user->username;
             $uid = $user->id;
@@ -452,14 +479,16 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
 
             $hasViewPermission = false;
 
-            if (!$this->isHidden ()) {
+            if (!$this->isHidden()) {
                 switch ($accessLevel) {
                     case self::QUERY_ALL:
                         $hasViewPermission = true;
                         break;
                     case self::QUERY_PUBLIC:
-                        if ($this->owner->getAttribute($this->visibilityAttr) ==
-                            self::VISIBILITY_PUBLIC) {
+                        if (
+                            $this->owner->getAttribute($this->visibilityAttr) ==
+                            self::VISIBILITY_PUBLIC
+                        ) {
 
                             $hasViewPermission = true;
                             break;
@@ -467,13 +496,16 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
                         // Visible if marked with visibility "Users' Groups"
                         // and the current user has groups in common with
                         // assignees of the model:
-                        if ($this->owner->getAttribute($this->visibilityAttr) == 
-                                self::VISIBILITY_GROUPS && 
-                            (bool) $this->assignmentAttr && 
-                            (bool) ($groupmatesRegex = self::getGroupmatesRegex()) && 
+                        if (
+                            $this->owner->getAttribute($this->visibilityAttr) ==
+                            self::VISIBILITY_GROUPS &&
+                            (bool) $this->assignmentAttr &&
+                            (bool) ($groupmatesRegex = self::getGroupmatesRegex()) &&
                             preg_match(
-                                '/' . $groupmatesRegex . '/', 
-                                $this->owner->getAttribute($this->assignmentAttr))) {
+                                '/' . $groupmatesRegex . '/',
+                                $this->owner->getAttribute($this->assignmentAttr)
+                            )
+                        ) {
 
                             $hasViewPermission = true;
                             break;
@@ -500,31 +532,33 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      *  to anyone or no one.
      * @return array array (<SQL condition string>, <array of parameters>)
      */
-public function getAssignedToCondition(
-    $includeAnyone = true, $alias = null, $username = null,
-    $paramsNamespace = 'X2PermissionsBehavior'
-) {
-    $username = $username === null ? Yii::app()->getSuName() : $username;
-    $prefix = empty($alias) ? '' : "$alias.";
-    $groupIdsRegex = self::getGroupIdRegex($username);
+    public function getAssignedToCondition(
+        $includeAnyone = true,
+        $alias = null,
+        $username = null,
+        $paramsNamespace = 'X2PermissionsBehavior'
+    ) {
+        $username = $username === null ? Yii::app()->getSuName() : $username;
+        $prefix = empty($alias) ? '' : "$alias.";
+        $groupIdsRegex = self::getGroupIdRegex($username);
 
-    $condition = "(" . ($includeAnyone ?
-        ($prefix . $this->assignmentAttr . "='Anyone' OR assignedTo='' OR ") : '') .
-        $prefix . $this->assignmentAttr .
-        " REGEXP :" . $paramsNamespace . "userNameRegex";
+        $condition = "(" . ($includeAnyone ?
+            ($prefix . $this->assignmentAttr . "='Anyone' OR assignedTo='' OR ") : '') .
+            $prefix . $this->assignmentAttr .
+            " REGEXP :" . $paramsNamespace . "userNameRegex";
 
-    $params = array(
-        ':' . $paramsNamespace . 'userNameRegex' => self::getUserNameRegex($username),
-    );
+        $params = array(
+            ':' . $paramsNamespace . 'userNameRegex' => self::getUserNameRegex($username),
+        );
 
-    if ($groupIdsRegex !== '') {
-        $condition .= " OR $prefix" . $this->assignmentAttr .
-            " REGEXP :" . $paramsNamespace . "groupIdsRegex";
-        $params[':' . $paramsNamespace . 'groupIdsRegex'] = $groupIdsRegex;
+        if ($groupIdsRegex !== '') {
+            $condition .= " OR $prefix" . $this->assignmentAttr .
+                " REGEXP :" . $paramsNamespace . "groupIdsRegex";
+            $params[':' . $paramsNamespace . 'groupIdsRegex'] = $groupIdsRegex;
+        }
+        $condition .= ')';
+        return array($condition, $params);
     }
-    $condition .= ')';
-    return array($condition, $params);
-}
 
 
     /**
@@ -533,25 +567,27 @@ public function getAssignedToCondition(
      * @param mixed $value If specified, use as the assignment instead of the
      *  current model's assignment field.
      */
-    public function getAssigneeNames($value = false) {
+    public function getAssigneeNames($value = false)
+    {
         $assignment = !$value ? $this->owner->getAttribute($this->getAssignmentAttr()) : $value;
         $assignees = !is_array($assignment) ? explode(', ', $assignment) : $assignment;
 
         $groupIds = array_filter($assignees, 'ctype_digit');
         $userNames = array_diff($assignees, $groupIds);
         $userNameParam = AuxLib::bindArray($userNames);
-        $userFullNames = !empty($userNames) ? array_map(function($u) {
-                    return Formatter::fullName($u['firstName'], $u['lastName']);
-                }, Yii::app()->db->createCommand()->select('firstName,lastName')
-                                ->from(User::model()->tableName())
-                                ->where('username IN ' . AuxLib::arrToStrList(
-                                                array_keys($userNameParam)), $userNameParam)
-                                ->queryAll()) : array();
+        $userFullNames = !empty($userNames) ? array_map(function ($u) {
+            return Formatter::fullName($u['firstName'], $u['lastName']);
+        }, Yii::app()->db->createCommand()->select('firstName,lastName')
+                ->from(User::model()->tableName())
+                ->where('username IN ' . AuxLib::arrToStrList(
+                    array_keys($userNameParam)
+                ), $userNameParam)
+                ->queryAll()) : array();
         $groupIdParam = AuxLib::bindArray($groupIds);
         $groupNames = !empty($groupIds) ? Yii::app()->db->createCommand()
-                        ->select('name')->from(Groups::model()->tableName())
-                        ->where('id IN ' . AuxLib::arrToStrList(array_keys($groupIdParam)), $groupIdParam)
-                        ->queryColumn() : array();
+            ->select('name')->from(Groups::model()->tableName())
+            ->where('id IN ' . AuxLib::arrToStrList(array_keys($groupIdParam)), $groupIdParam)
+            ->queryColumn() : array();
         return array_merge($userFullNames, $groupNames);
     }
 
@@ -562,7 +598,8 @@ public function getAssignedToCondition(
      *  are in the assignedTo string will also be returned
      * @return array assignees of this action
      */
-    public function getAssignees($getUsernamesFromGroups = false) {
+    public function getAssignees($getUsernamesFromGroups = false)
+    {
         $assignment = $this->owner->getAttribute($this->getAssignmentAttr());
         $assignees = !is_array($assignment) ? explode(', ', $assignment) : $assignment;
 
@@ -575,11 +612,11 @@ public function getAssignedToCondition(
 
                 $groupIdParam = AuxLib::bindArray($groupIds);
                 $groupUsers = Yii::app()->db->createCommand()
-                        ->select('username')
-                        ->from('x2_group_to_user')
-                        ->where('groupId IN ' .
-                                AuxLib::arrToStrList(array_keys($groupIdParam)), $groupIdParam)
-                        ->queryColumn();
+                    ->select('username')
+                    ->from('x2_group_to_user')
+                    ->where('groupId IN ' .
+                        AuxLib::arrToStrList(array_keys($groupIdParam)), $groupIdParam)
+                    ->queryColumn();
                 foreach ($groupUsers as $username)
                     $assigneesNames[] = $username;
             }
@@ -589,8 +626,11 @@ public function getAssignedToCondition(
                 continue;
             } else if (!ctype_digit($assignee)) {
                 // Not a group ID but a username
-                if (CActiveRecord::model('Profile')->exists('username=:u', array(
-                            ':u' => $assignee))) {
+                if (
+                    CActiveRecord::model('Profile')->exists('username=:u', array(
+                        ':u' => $assignee
+                    ))
+                ) {
                     $assigneesNames[] = $assignee;
                 }
             }
@@ -604,7 +644,8 @@ public function getAssignedToCondition(
      * @return string This can be inserted (with parameter binding) into SQL queries to
      *  determine if an action is assigned to a given group.
      */
-    public static function getGroupIdRegex($username = null) {
+    public static function getGroupIdRegex($username = null)
+    {
         if ($username !== null) {
             $user = User::model()->findByAttributes(array('username' => $username));
             if (!$user)
@@ -629,11 +670,13 @@ public function getAssignedToCondition(
      *
      * @param array $userNames
      */
-    public static function getUsernameListRegex($usernames) {
+    public static function getUsernameListRegex($usernames)
+    {
         return '(^|, )(' . implode('|', $usernames) . ')($|, )';
     }
 
-    public static function getGroupmatesRegex() {
+    public static function getGroupmatesRegex()
+    {
         $groupmates = Groups::getGroupmates(Yii::app()->getSuId());
         return empty($groupmates) ? null : self::getUsernameListRegex($groupmates);
     }

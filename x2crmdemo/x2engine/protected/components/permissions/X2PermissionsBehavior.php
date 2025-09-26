@@ -501,22 +501,27 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      * @return array array (<SQL condition string>, <array of parameters>)
      */
     public function getAssignedToCondition(
-        $includeAnyone = true, $alias = null, $username = null,
-        $paramsNamespace = 'X2PermissionsBehavior') {
-
+        $includeAnyone = true,
+        $alias = null,
+        $username = null,
+        $paramsNamespace = 'X2PermissionsBehavior'
+    ) {
         $username = $username === null ? Yii::app()->getSuName() : $username;
         $prefix = empty($alias) ? '' : "$alias.";
         $groupIdsRegex = self::getGroupIdRegex($username);
+
         $condition = "(" . ($includeAnyone ?
-                        ($prefix . $this->assignmentAttr . "='Anyone' OR assignedTo='' OR ") : '') .
-                $prefix . $this->assignmentAttr .
-                " REGEXP BINARY :" . $paramsNamespace . "userNameRegex";
+            ($prefix . $this->assignmentAttr . "='Anyone' OR assignedTo='' OR ") : '') .
+            $prefix . $this->assignmentAttr .
+            " REGEXP :" . $paramsNamespace . "userNameRegex";
+
         $params = array(
             ':' . $paramsNamespace . 'userNameRegex' => self::getUserNameRegex($username),
         );
+
         if ($groupIdsRegex !== '') {
             $condition .= " OR $prefix" . $this->assignmentAttr .
-                    " REGEXP BINARY :" . $paramsNamespace . "groupIdsRegex";
+                " REGEXP :" . $paramsNamespace . "groupIdsRegex";
             $params[':' . $paramsNamespace . 'groupIdsRegex'] = $groupIdsRegex;
         }
         $condition .= ')';

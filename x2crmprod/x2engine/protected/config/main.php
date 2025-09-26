@@ -284,8 +284,19 @@ $config = array(
             'charset' => 'utf8',
             'enableProfiling' => YII_DEBUG,
             'enableParamLogging' => YII_DEBUG,
-            'schemaCachingDuration' => 84600
+            'schemaCachingDuration' => 84600,
+            'enableProfiling'=>true,
+        'enableParamLogging'=>true,
         ),
+         'log'=>array(
+        'class'=>'CLogRouter',
+        'routes'=>array(
+            array(
+                'class'=>'CFileLogRoute',
+                'levels'=>'error, warning, info, trace, profile',
+            ),
+        ),
+    ),
         'authManager' => array(
             'class' => 'application.components.X2AuthManager',
             'connectionID' => 'db',

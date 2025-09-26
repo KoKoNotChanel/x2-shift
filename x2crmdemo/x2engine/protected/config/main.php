@@ -250,7 +250,7 @@ $config = array(
         // 'connectionString' => 'sqlite:'.dirname(__FILE__).'/../data/testdrive.db',
         // ),
         'db' => array(
-            'connectionString' => "mysql:host=$host;dbname=$dbname",
+            'connectionString' => "mysql:host=$host;port=$port;dbname=$dbname",
             'emulatePrepare' => true,
             'username' => $user,
             'password' => $pass,

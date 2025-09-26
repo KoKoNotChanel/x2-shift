@@ -500,28 +500,32 @@ class X2PermissionsBehavior extends ModelPermissionsBehavior {
      *  to anyone or no one.
      * @return array array (<SQL condition string>, <array of parameters>)
      */
-    public function getAssignedToCondition(
-        $includeAnyone = true, $alias = null, $username = null,
-        $paramsNamespace = 'X2PermissionsBehavior') {
+public function getAssignedToCondition(
+    $includeAnyone = true, $alias = null, $username = null,
+    $paramsNamespace = 'X2PermissionsBehavior'
+) {
+    $username = $username === null ? Yii::app()->getSuName() : $username;
+    $prefix = empty($alias) ? '' : "$alias.";
+    $groupIdsRegex = self::getGroupIdRegex($username);
 
-        $username = $username === null ? Yii::app()->getSuName() : $username;
-        $prefix = empty($alias) ? '' : "$alias.";
-        $groupIdsRegex = self::getGroupIdRegex($username);
-        $condition = "(" . ($includeAnyone ?
-                        ($prefix . $this->assignmentAttr . "='Anyone' OR assignedTo='' OR ") : '') .
-                $prefix . $this->assignmentAttr .
-                " REGEXP BINARY :" . $paramsNamespace . "userNameRegex";
-        $params = array(
-            ':' . $paramsNamespace . 'userNameRegex' => self::getUserNameRegex($username),
-        );
-        if ($groupIdsRegex !== '') {
-            $condition .= " OR $prefix" . $this->assignmentAttr .
-                    " REGEXP BINARY :" . $paramsNamespace . "groupIdsRegex";
-            $params[':' . $paramsNamespace . 'groupIdsRegex'] = $groupIdsRegex;
-        }
-        $condition .= ')';
-        return array($condition, $params);
+    $condition = "(" . ($includeAnyone ?
+        ($prefix . $this->assignmentAttr . "='Anyone' OR assignedTo='' OR ") : '') .
+        $prefix . $this->assignmentAttr .
+        " REGEXP :" . $paramsNamespace . "userNameRegex";
+
+    $params = array(
+        ':' . $paramsNamespace . 'userNameRegex' => self::getUserNameRegex($username),
+    );
+
+    if ($groupIdsRegex !== '') {
+        $condition .= " OR $prefix" . $this->assignmentAttr .
+            " REGEXP :" . $paramsNamespace . "groupIdsRegex";
+        $params[':' . $paramsNamespace . 'groupIdsRegex'] = $groupIdsRegex;
     }
+    $condition .= ')';
+    return array($condition, $params);
+}
+
 
     /**
      * Generates a display-friendly list of assignees

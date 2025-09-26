@@ -2,7 +2,6 @@
 $appName='X2CRM';
 $email='edouard@istawi.com';
 $host='127.0.0.1';
-$port='3307';
 $user='x2shift';
 $pass='Pwd$2025@';
 $dbname='x2crmprod';
@@ -10,4 +9,5 @@ $version='8.5';
 $buildDate='1663790325';
 $updaterVersion='6.9.1';
 $language='en';
+$port='3307';
 ?>
